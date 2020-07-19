@@ -1,10 +1,11 @@
-package com.github.sampov2;
+package org.greening.onejar;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.FileSet;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
@@ -29,12 +30,9 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Creates an executable one-jar version of the project's normal jar, including all dependencies.
- *
- * @goal one-jar
- * @phase package
- * @requiresProject
- * @requiresDependencyResolution runtime
  */
+@Mojo(name="one-jar", requiresDependencyResolution = ResolutionScope.RUNTIME,
+        defaultPhase = LifecyclePhase.PACKAGE)
 public class OneJarMojo extends AbstractMojo {
 	
 	private static final String MF_REQUIRED_IMPL_VERSION = "ImplementationVersion";
@@ -43,64 +41,49 @@ public class OneJarMojo extends AbstractMojo {
 
 	/**
      * All the dependencies including trancient dependencies.
-     *
-     * @parameter default-value="${project.artifacts}"
-     * @required
-     * @readonly
      */
+    @Parameter(defaultValue = "${project.artifacts}", required = true, readonly = true)
     private Collection<Artifact> artifacts;
 
     /**
      * All declared dependencies in this project, including system scoped dependencies.
-     *
-     * @parameter default-value="${project.dependencies}"
-     * @required
-     * @readonly
      */
+    @Parameter(defaultValue = "${project.dependencies}", required = true, readonly = true)
     private Collection<Dependency> dependencies;
 
     /**
      * FileSet to be included in the "binlib" directory inside the one-jar. This is the place to include native
      * libraries such as .dll files and .so files. They will automatically be loaded by the one-jar.
-     * 
-     * @parameter
      */
+    @Parameter
     private FileSet[] binlibs;
 
     /**
      * The directory for the resulting file.
-     *
-     * @parameter expression="${project.build.directory}"
-     * @required
-     * @readonly
      */
+    @Parameter(defaultValue = "${project.build.directory}", required = true, readonly = true)
     private File outputDirectory;
 
     /**
      * Name of the main JAR.
-     *
-     * @parameter expression="${project.build.finalName}.jar"
-     * @readonly
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.finalName}.jar", readonly = true, required = true)
     private String mainJarFilename;
 
     /**
      * Name of the generated JAR.
      * Will default to the final name if left unspecified.
      * Include the classifier if required, it will not be added automatically.
-     *
-     * @parameter expression="${project.build.finalName}.one-jar.jar"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.finalName}.one-jar.jar", required = true)
     private String filename;
 
-    // TODO: do we want to be strict and do a mutual exclusive check for version and local template?
     /**
-     * The version of one-jar to use.  Has a default, so typically no need to specify this.
      *
-     * @parameter expression="${onejar-version}" default-value="0.97-patched"
+     * The version of one-jar to use.  Has a default, so typically no need to specify this.
+     * TODO: do we want to be strict and do a mutual exclusive check for version and local template?
      */
+    @Parameter(defaultValue = "0.97-patched")
     private String onejarVersion;
 
     /**
@@ -108,33 +91,27 @@ public class OneJarMojo extends AbstractMojo {
      * This must be a "one-jar-boot.jar" style artifact. 
      * If you specify this option, the onejarVersion will have no effect anymore.
      * This should be a path relative to the project basedir.
-     * 
-     * @parameter 
      */
+    @Parameter
     private String localOneJarTemplate;
     
     /**
      * Whether to attach the generated one-jar to the build. You may also wish to set <code>classifier</code>.
-     *
-     * @parameter default-value=false
      */
+    @Parameter(defaultValue = "false")
     private boolean attachToBuild;
 
     /**
      * Classifier to use, if the one-jar is to be attached to the build.
      * Set <code>&lt;attachToBuild&gt;true&lt;/attachToBuild&gt; if you want that.
-     *
-     * @parameter default-value="onejar" 
      */
+    @Parameter(defaultValue = "onejar")
     private String classifier;
 
     /**
      * This Maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
     
     /**
@@ -146,27 +123,23 @@ public class OneJarMojo extends AbstractMojo {
     private MavenProjectHelper projectHelper;
 
     /**
-     * The main class that one-jar should activate
-     *
-     * @parameter expression="${onejar-mainclass}"
+     * The main class that one-jar should activate after loading the jars
      */
+    @Parameter(defaultValue = "${pom.properties.onejar-mainclass}",required = true)
     private String mainClass;
 
     /**
      * The splash screen image.
      * This should be a path relative to the project basedir.
      * Adds the option to the manifest and copies and checks the image.
-     * 
-     * @parameter expression="${onejar-splashScreen}"
      */
+    @Parameter(defaultValue = "${onejar-splashScreen}")
     private String splashScreen;
     
     /**
      * Implementation Version of the jar. Defaults to the build's version.
-     *
-     * @parameter expression="${project.version}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.version}", required = true)
     private String implementationVersion;
     
 	/**
@@ -175,8 +148,8 @@ public class OneJarMojo extends AbstractMojo {
 	 * Values used here will are leading and will not be overridden by other options.
 	 * 
 	 * @see <a href="http://one-jar.sourceforge.net/index.php?page=details&file=manifest">Documentation one the one-jar manifest options</a>.
-	 * @parameter
 	 */
+	@Parameter
 	private Map<String,String> manifestEntries;
     
     public void execute() throws MojoExecutionException {

@@ -1,4 +1,4 @@
-package com.github.sampov2;
+package org.greening.onejar;
 
 import java.util.HashMap;
 
