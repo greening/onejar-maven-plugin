@@ -22,8 +22,7 @@ import org.junit.Ignore;
 class TestableMojo extends OneJarMojo {
 	
 	private static final String defaultFinalName = "default-finalname";
-	
-	private final MavenProject project;
+
 	private final MavenProjectHelper projectHelper;
 	private final List<Dependency> dependencies;
 	private final List<Artifact> artifacts;
@@ -31,11 +30,12 @@ class TestableMojo extends OneJarMojo {
 	private File projectTargetForTest;
 	
 	TestableMojo() {
-		projectTargetForTest = new File(System.getProperty("java.io.tmpdir")+"/one-jar-test/");
+		projectTargetForTest = new File(System.getProperty("java.io.tmpdir")+"/one-jar-test/target");
 		projectTargetForTest.mkdirs();
 		projectTargetForTest.deleteOnExit();
 		
 		project = new MavenProject();
+		project.setFile(projectTargetForTest); // This is needed for plugin to discover there is nothing in the directory.
 		projectHelper = new DefaultMavenProjectHelper();
 		artifacts = new ArrayList<Artifact>();
 		dependencies = new ArrayList<Dependency>();
@@ -43,12 +43,11 @@ class TestableMojo extends OneJarMojo {
 		set("mainJarFilename", defaultFinalName + ".jar");
 
 		set("dependencies", dependencies);
-		set("implementationVersion", "1.0-test");
 		set("outputDirectory", projectTargetForTest);
 		set("filename", defaultFinalName+".one-jar.jar");
 		set("classifier", "onejar");
 		set("attachToBuild", false);
-		set("onejarVersion", "0.97");
+		set("bootfile", "one-jar-boot-0.97.jar");
 		set("project", project);
 		set("projectHelper", projectHelper);
 	}

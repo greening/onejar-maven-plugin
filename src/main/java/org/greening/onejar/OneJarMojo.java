@@ -79,21 +79,12 @@ public class OneJarMojo extends AbstractMojo {
     private String filename;
 
     /**
-     *
-     * The version of one-jar to use.  Has a default, so typically no need to specify this.
-     * TODO: do we want to be strict and do a mutual exclusive check for version and local template?
+     * The one-jar or uno-jar artifact to start from. This must be a "one-jar-boot.jar" style artifact. If this is coming from
+     * a local file, it is a path relative to the project basedir. If no file exists at that location, we look for the file in
+     * the onejar-maven-plugin file itself.
      */
-    @Parameter(defaultValue = "0.97-patched")
-    private String onejarVersion;
-
-    /**
-     * A custom one-jar artifact to start from (RC build for example).
-     * This must be a "one-jar-boot.jar" style artifact. 
-     * If you specify this option, the onejarVersion will have no effect anymore.
-     * This should be a path relative to the project basedir.
-     */
-    @Parameter
-    private String localOneJarTemplate;
+    @Parameter(defaultValue = "one-jar-boot-0.97-patched.jar")
+    private String bootfile;
     
     /**
      * Whether to attach the generated one-jar to the build. You may also wish to set <code>classifier</code>.
@@ -112,7 +103,7 @@ public class OneJarMojo extends AbstractMojo {
      * This Maven project.
      */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    private MavenProject project;
+    protected MavenProject project;
     
     /**
      * For attaching artifacts etc.
@@ -137,7 +128,7 @@ public class OneJarMojo extends AbstractMojo {
     private String splashScreen;
     
     /**
-     * Implementation Version of the jar. Defaults to the build's version.
+     * Implementation Version of the output jar. Defaults to the project.version in pom.xml.
      */
     @Parameter(defaultValue = "${project.version}", required = true)
     private String implementationVersion;
@@ -176,13 +167,11 @@ public class OneJarMojo extends AbstractMojo {
             // Finalize the onejar archive
             template = openOnejarTemplateArchive();
             copyTemplateFilesToArchive(template, out);
-            
+            out.close();
+            template.close();
         } catch (IOException e) {
             error(e);
             throw new MojoExecutionException("One-jar Mojo failed.", e);
-        } finally {
-            IOUtils.closeQuietly(out);
-            IOUtils.closeQuietly(template);
         }
 
         // Attach the created one-jar to the build.
@@ -250,30 +239,20 @@ public class OneJarMojo extends AbstractMojo {
 	}
 
 	private void displayPluginInfo() {
-        info("Using One-Jar to create a single-file distribution");
-        info("Implementation Version: %s", implementationVersion);
-        if (localOneJarTemplate != null) {
-        	info("Using local One-Jar template: %s", localOneJarTemplate);
-        } else {
-        	info("Using One-Jar version: %s", onejarVersion);
-        }
-        info("More info on One-Jar: http://one-jar.sourceforge.net/");
-        info("License for One-Jar:  http://one-jar.sourceforge.net/one-jar-license.txt");
-        info("One-Jar file: %s", outputDirectory.getAbsolutePath() + File.separator + filename);
+        String outputFile = outputDirectory.getAbsolutePath() + File.separator + filename;
+        info("One-Jar %s using template %s, building %s", implementationVersion, bootfile, outputFile );
     }
 
     // ----- One-Jar Template ------------------------------------------------------------------------------------------
 
-    private String getOnejarArchiveName() {
-        return "one-jar-boot-" + onejarVersion + ".jar";
-    }
-
     private JarInputStream openOnejarTemplateArchive() throws IOException {
-    	if (localOneJarTemplate != null) {
-    		return new JarInputStream(new FileInputStream(new File(project.getBasedir(), localOneJarTemplate)));
-    	} else {    	
-    		return new JarInputStream(getClass().getClassLoader().getResourceAsStream(getOnejarArchiveName()));
-    	}
+        String bootFilename = (project != null? project.getBasedir(): ".") + bootfile;
+        File f = new File(bootFilename);
+        if (f.isFile() && f.canRead()) {
+            return new JarInputStream( new FileInputStream(f) );
+        } else {
+            return new JarInputStream(getClass().getClassLoader().getResourceAsStream(bootfile));
+        }
     }
     
     private class AttributeEntry extends AbstractMap.SimpleEntry<String, String> {
@@ -287,7 +266,7 @@ public class OneJarMojo extends AbstractMojo {
         // Copy the template's boot-manifest.mf file
         ZipInputStream zipIS = openOnejarTemplateArchive();
         Manifest manifest = new Manifest(getFileBytes(zipIS, "boot-manifest.mf"));
-        IOUtils.closeQuietly(zipIS);
+        zipIS.close();
 
         Attributes mainAttributes = manifest.getMainAttributes();
         // first add the custom specified entries

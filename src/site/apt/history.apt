@@ -1,3 +1,14 @@
+Updates (version 1.4.8)
+
+    Updated by {{{http://dan.greening.org/}Dan Greening}} to include uno-jar boot file, and to consolidate <<onejarVersion>> and localTemplateArchive as <<bootfile>>.
+
+    {{https://github.com/greening/onejar-maven-plugin}Source Code}}
+
+
+Updates (version 1.4.7)
+
+    Updated by {{{}Sampo Savolainen} to fix issues with included AWS jars.
+
 Updates (version 1.4.4)
 
     Updated by {{{http://www.simontuffs.com/}Simon Tuffs}} to use the actual 0.97 release version of one-jar.
