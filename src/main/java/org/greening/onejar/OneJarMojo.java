@@ -107,10 +107,8 @@ public class OneJarMojo extends AbstractMojo {
     
     /**
      * For attaching artifacts etc.
-     *
-     * @component
-     * @readonly
      */
+    @Component
     private MavenProjectHelper projectHelper;
 
     /**
@@ -246,7 +244,7 @@ public class OneJarMojo extends AbstractMojo {
     // ----- One-Jar Template ------------------------------------------------------------------------------------------
 
     private JarInputStream openOnejarTemplateArchive() throws IOException {
-        String bootFilename = (project != null? project.getBasedir(): ".") + bootfile;
+        String bootFilename = (project != null? project.getBasedir(): ".") + File.separator + bootfile;
         File f = new File(bootFilename);
         if (f.isFile() && f.canRead()) {
             return new JarInputStream( new FileInputStream(f) );

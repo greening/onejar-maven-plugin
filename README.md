@@ -17,26 +17,29 @@ The fork packages a patched one-jar 0.97 from [iceberg901](https://github.com/ic
 
 ### Example pom.xml plugin configuration
 
-	...
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.greening</groupId>
-				<artifactId>onejar-maven-plugin</artifactId>
-				<version>1.4.8</version>
-				<executions>
-					<execution>
-						<configuration>
-							<mainClass>my.package.Foo</mainClass>
-							<attachToBuild>true</attachToBuild>
-						</configuration>
-						<goals>
-							<goal>one-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	...
+```
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.greening</groupId>
+            <artifactId>onejar-maven-plugin</artifactId>
+            <version>1.4.8</version>
+            <executions>
+                <execution>
+                    <configuration>
+                        <mainClass>my.package.Foo</mainClass>
+                        <attachToBuild>true</attachToBuild>
+                    </configuration>
+                    <goals>
+                        <goal>one-jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+# References for folks modifying this repo
 
+* [Plugin Parameter Expressions](https://maven.apache.org/ref/3.6.3/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html)
+* 
