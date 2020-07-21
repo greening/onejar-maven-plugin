@@ -42,4 +42,4 @@ The fork packages a patched one-jar 0.97 from [iceberg901](https://github.com/ic
 # References for folks modifying this repo
 
 * [Plugin Parameter Expressions](https://maven.apache.org/ref/3.6.3/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html)
-* 
+* [Uno-Jar github repository[(https://github.com/nsoft/uno-jar)
