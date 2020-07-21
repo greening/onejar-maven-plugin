@@ -1,5 +1,7 @@
 package org.greening.onejar;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +52,20 @@ public class OneJarMojo_ManifestEntriesTest {
 		mojo.set("bootfile", "classes/unojar-core-1.0.1.jar");
 		mojo.set("filename", "test-5.one-jar.jar");
 		mojo.execute();
+	}
+	@Test
+	public void when_not_exists() throws Exception {
+		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
+		mojo.set("bootfile", "NOTVALID-core-1.0.1");
+		mojo.set("filename", "test-5.one-jar.jar");
+		Assertions.assertThrows(MojoExecutionException.class, () -> mojo.execute());
+	}
+	@Test
+	public void when_not_exists_jar() throws Exception {
+		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
+		mojo.set("bootfile", "classes/NOTVALID-core-1.0.1.jar");
+		mojo.set("filename", "test-5.one-jar.jar");
+		Assertions.assertThrows(MojoExecutionException.class, () -> mojo.execute());
 	}
 
 }

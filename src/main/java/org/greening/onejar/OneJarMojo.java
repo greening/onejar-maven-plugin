@@ -232,20 +232,24 @@ public class OneJarMojo extends AbstractMojo {
 
     // ----- One-Jar Boot Jar ------------------------------------------------------------------------------------------
 
-    private JarInputStream openOnejarStream() throws IOException {
+    private JarInputStream openOnejarStream() throws IOException, MojoExecutionException {
         if (bootfile.matches(".*\\.jar$")) {
             String bootFilename = (project != null ? project.getBasedir() : ".") + File.separator + bootfile;
             File f = new File(bootFilename);
             if (f.isFile() && f.canRead()) {
                 return new JarInputStream(new FileInputStream(f));
             } else
-                return null;
+                throw new MojoExecutionException(String.format("Configuration bootfile=\"%s\" at path \"%s\" not found.",bootfile, bootFilename));
         } else {
-            return new JarInputStream(getClass().getClassLoader().getResourceAsStream(bootfile + ".jar"));
+            InputStream is = getClass().getClassLoader().getResourceAsStream(bootfile + ".jar");
+            JarInputStream boot = (is != null? new JarInputStream(is): null);
+            if (boot == null)
+                throw new MojoExecutionException(String.format("Configuration bootfile=\"%s\" not found as a builtin.", bootfile));
+            return boot;
         }
     }
 
-    private Manifest openBootManifest() throws IOException {
+    private Manifest openBootManifest() throws IOException, MojoExecutionException {
         return openOnejarStream().getManifest();
     }
     
@@ -256,7 +260,7 @@ public class OneJarMojo extends AbstractMojo {
 		}
 	}
     
-    private Manifest prepareManifest() throws IOException {
+    private Manifest prepareManifest() throws IOException, MojoExecutionException {
         Manifest manifest = openBootManifest();
 
         Attributes mainAttributes = manifest.getMainAttributes();
@@ -345,23 +349,6 @@ public class OneJarMojo extends AbstractMojo {
             }else{
                 throw e;
             }
-        }
-    }
-
-    private InputStream getFileBytes(ZipInputStream is, String name) throws IOException {
-        final JarFile file = new JarFile(name);
-        try {
-            final Enumeration<? extends JarEntry> entries = file.entries();
-            while (entries.hasMoreElements()) {
-                final JarEntry entry = entries.nextElement();
-                if (entry.getName().equals(name)) {
-                    byte[] data = IOUtils.toByteArray(is);
-                    return new ByteArrayInputStream(data);
-                }
-            }
-            return null;
-        } finally {
-            file.close();
         }
     }
 
