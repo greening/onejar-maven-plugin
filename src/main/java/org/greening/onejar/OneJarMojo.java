@@ -29,6 +29,7 @@ public class OneJarMojo extends AbstractMojo {
 	
 	private static final String MF_REQUIRED_IMPL_VERSION = "ImplementationVersion";
     private static final String MF_OPTION_MAIN_CLASS = "One-Jar-Main-Class";
+    private static final String MF2_OPTION_MAIN_CLASS = "Uno-Jar-Main-Class";
     private static final String MF_OPTION_SPLASH_SCREEN_IMAGE = "SplashScreen-Image";
 
 	/**
@@ -285,9 +286,8 @@ public class OneJarMojo extends AbstractMojo {
         
         // If the client has specified a mainClass argument, add the proper entry to the manifest
         // to be backwards compatible, add mainclass as simple option when not already set in manifestEntries
-        setOptional(mainClass, mainAttributes,
-        		new AttributeEntry(MF_OPTION_MAIN_CLASS, mainClass),
-        		MF_OPTION_MAIN_CLASS);
+        setOptional(mainClass, mainAttributes, new AttributeEntry(MF_OPTION_MAIN_CLASS, mainClass), MF_OPTION_MAIN_CLASS);
+        setOptional(mainClass, mainAttributes, new AttributeEntry(MF2_OPTION_MAIN_CLASS, mainClass), MF2_OPTION_MAIN_CLASS);
 
         return manifest;
     }
