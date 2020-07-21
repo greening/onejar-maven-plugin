@@ -1,4 +1,4 @@
-package org.greening.onejar;
+package org.greening.unojar;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
@@ -18,14 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
 
 /**
- * Creates an executable one-jar version of the project's normal jar, including all dependencies.
+ * Creates an executable unojar version of the project's normal jar, including all dependencies.
  */
-@Mojo(name="one-jar", requiresDependencyResolution = ResolutionScope.RUNTIME,
+@Mojo(name="unojar", requiresDependencyResolution = ResolutionScope.RUNTIME,
         defaultPhase = LifecyclePhase.PACKAGE)
-public class OneJarMojo extends AbstractMojo {
+public class UnojarMojo extends AbstractMojo {
 	
 	private static final String MF_REQUIRED_IMPL_VERSION = "ImplementationVersion";
     private static final String MF_OPTION_MAIN_CLASS = "One-Jar-Main-Class";
@@ -45,8 +44,8 @@ public class OneJarMojo extends AbstractMojo {
     private Collection<Dependency> dependencies;
 
     /**
-     * FileSet to be included in the "binlib" directory inside the one-jar. This is the place to include native
-     * libraries such as .dll files and .so files. They will automatically be loaded by the one-jar.
+     * FileSet to be included in the "binlib" directory inside the unojar. This is the place to include native
+     * libraries such as .dll files and .so files. They will automatically be loaded by the unojar.
      */
     @Parameter
     private FileSet[] binlibs;
@@ -68,28 +67,28 @@ public class OneJarMojo extends AbstractMojo {
      * Will default to the final name if left unspecified.
      * Include the classifier if required, it will not be added automatically.
      */
-    @Parameter(defaultValue = "${project.build.finalName}.one-jar.jar", required = true)
+    @Parameter(defaultValue = "${project.build.finalName}.unojar.jar", required = true)
     private String filename;
 
     /**
      * The one-jar or uno-jar artifact to start from. If the bootfile is terminated with ".jar", it is assumed to be a file
      * path relative to the project basedir. If bootfile is not terminated with ".jar", we add '.jar" and look for the file
-     * inside the onejar-maven-plugin jar file.
+     * inside the unojar-maven-plugin jar file.
      */
-    @Parameter(defaultValue = "one-jar-boot-0.97-patched")
+    @Parameter(defaultValue = "unojar-core-1.0.1")
     private String bootfile;
     
     /**
-     * Whether to attach the generated one-jar to the build. You may also wish to set <code>classifier</code>.
+     * Whether to attach the generated unojar to the build. You may also wish to set <code>classifier</code>.
      */
     @Parameter(defaultValue = "false")
     private boolean attachToBuild;
 
     /**
-     * Classifier to use, if the one-jar is to be attached to the build.
+     * Classifier to use, if the unojar is to be attached to the build.
      * Set <code>&lt;attachToBuild&gt;true&lt;/attachToBuild&gt; if you want that.
      */
-    @Parameter(defaultValue = "onejar")
+    @Parameter(defaultValue = "unojar")
     private String classifier;
 
     /**
@@ -105,9 +104,9 @@ public class OneJarMojo extends AbstractMojo {
     private MavenProjectHelper projectHelper;
 
     /**
-     * The main class that one-jar should activate after loading the jars
+     * The main class that unojar should activate after loading the jars
      */
-    @Parameter(defaultValue = "${pom.properties.onejar-mainclass}",required = true)
+    @Parameter(defaultValue = "${pom.properties.unojar-mainclass}",required = true)
     private String mainClass;
 
     /**
@@ -115,7 +114,7 @@ public class OneJarMojo extends AbstractMojo {
      * This should be a path relative to the project basedir.
      * Adds the option to the manifest and copies and checks the image.
      */
-    @Parameter(defaultValue = "${onejar-splashScreen}")
+    @Parameter(defaultValue = "${unojar-splashScreen}")
     private String splashScreen;
     
     /**
@@ -125,7 +124,7 @@ public class OneJarMojo extends AbstractMojo {
     private String implementationVersion;
     
 	/**
-	 * The entries to include as-is in the one-jar manifest.
+	 * The entries to include as-is in the unojar manifest.
 	 * This is optional.
 	 * Values used here will are leading and will not be overridden by other options.
 	 * 
@@ -140,38 +139,37 @@ public class OneJarMojo extends AbstractMojo {
         displayPluginInfo();
 
         JarOutputStream out = null;
-        File onejarFile;
+        File unojarFile;
         try {
-            // Prepare the onejar manifest file content from bootfile
+            // Prepare the unojar manifest file content from bootfile
             Manifest manifest = prepareManifest();
 
         	// Create the target file
-            onejarFile = new File(outputDirectory, filename);
-			out = new JarOutputStream(new FileOutputStream(onejarFile, false), manifest);
+            unojarFile = new File(outputDirectory, filename);
+			out = new JarOutputStream(new FileOutputStream(unojarFile, false), manifest);
         	
 			// Add files (based on options)
             addFilesToOutput(out);
             
-            // Finalize the onejar archive
-            JarInputStream bootStream = openOnejarStream();
+            // Finalize the unojar archive
+            JarInputStream bootStream = openUnojarStream();
             copyBootFilesToOutput(bootStream, out);
             out.close();
             bootStream.close();
         } catch (IOException e) {
             error(e);
-            throw new MojoExecutionException("One-jar Mojo failed.", e);
+            throw new MojoExecutionException("Unojar Mojo failed.", e);
         }
 
-        // Attach the created one-jar to the build.
+        // Attach the created unojar to the build.
         if (attachToBuild) {
-            projectHelper.attachArtifact(project, "jar", classifier, onejarFile);
+            projectHelper.attachArtifact(project, "jar", classifier, unojarFile);
         }
     }
 
 	private void copyBootFilesToOutput(JarInputStream bootStream,
                                        JarOutputStream out) throws IOException {
-		// One-jar stuff
-        debug("Adding one-jar components...");
+        debug("Adding unojar components...");
 		
 		ZipEntry entry = null;
         while ((entry = bootStream.getNextEntry()) != null) {
@@ -228,12 +226,12 @@ public class OneJarMojo extends AbstractMojo {
 
 	private void displayPluginInfo() {
         String outputFile = outputDirectory.getAbsolutePath() + File.separator + filename;
-        info("One-Jar %s using boot jar %s, building %s", implementationVersion, bootfile, outputFile );
+        info("Unojar %s using boot jar %s, building %s", implementationVersion, bootfile, outputFile );
     }
 
-    // ----- One-Jar Boot Jar ------------------------------------------------------------------------------------------
+    // ----- Unojar Boot Jar ------------------------------------------------------------------------------------------
 
-    private JarInputStream openOnejarStream() throws IOException, MojoExecutionException {
+    private JarInputStream openUnojarStream() throws IOException, MojoExecutionException {
         if (bootfile.matches(".*\\.jar$")) {
             String bootFilename = (project != null ? project.getBasedir() : ".") + File.separator + bootfile;
             File f = new File(bootFilename);
@@ -251,7 +249,7 @@ public class OneJarMojo extends AbstractMojo {
     }
 
     private Manifest openBootManifest() throws IOException, MojoExecutionException {
-        return openOnejarStream().getManifest();
+        return openUnojarStream().getManifest();
     }
     
     private class AttributeEntry extends AbstractMap.SimpleEntry<String, String> {
@@ -323,7 +321,7 @@ public class OneJarMojo extends AbstractMojo {
     	// add explicitly specified manifest entries
         if (manifestEntries != null) {
 	        for (Entry<String, String> entry : manifestEntries.entrySet()) {
-	        	debug("adding entry [%s:%s] to the one-jar manifest", entry.getKey(), entry.getValue());
+	        	debug("adding entry [%s:%s] to the unojar manifest", entry.getKey(), entry.getValue());
 	        	mainAttributes.putValue(entry.getKey(), entry.getValue());
 	        }
         }

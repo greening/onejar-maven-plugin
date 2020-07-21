@@ -43,7 +43,7 @@ Technique A - In addition to a 'regular' executable jar file
                             <classifier>onejar</classifier>
                         </configuration>
                         <goals>
-                            <goal>one-jar</goal>
+                            <goal>unojar</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -108,11 +108,11 @@ Technique B - Instead of a 'regular' executable jar file
                             </binlibs>
                             <!-- Optional, default is false -->
                             <attachToBuild>true</attachToBuild>
-                            <!-- Optional, default is "onejar" -->
-                            <classifier>onejar</classifier>
+                            <!-- Optional, default is "unojar" -->
+                            <classifier>unojar</classifier>
                         </configuration>
                         <goals>
-                            <goal>one-jar</goal>
+                            <goal>unojar</goal>
                         </goals>
                     </execution>
                 </executions>

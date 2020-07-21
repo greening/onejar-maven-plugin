@@ -1,4 +1,4 @@
-package org.greening.onejar;
+package org.greening.unojar;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +13,11 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.util.ReflectionUtils;
 
 /**
- * Convenient testing variation of the one-jar mojo.
+ * Convenient testing variation of the unojar mojo.
  * 
  * @author bwijsmuller
  */
-class TestableMojo extends OneJarMojo {
+class TestableMojo extends UnojarMojo {
 	
 	private static final String defaultFinalName = "default-finalname";
 
@@ -42,8 +42,8 @@ class TestableMojo extends OneJarMojo {
 
 		set("dependencies", dependencies);
 		set("outputDirectory", projectTargetForTest);
-		set("filename", defaultFinalName+".one-jar.jar");
-		set("classifier", "onejar");
+		set("filename", defaultFinalName+".unojar.jar");
+		set("classifier", "unojar");
 		set("attachToBuild", false);
 		set("bootfile", "one-jar-boot-0.97");
 		set("project", project);

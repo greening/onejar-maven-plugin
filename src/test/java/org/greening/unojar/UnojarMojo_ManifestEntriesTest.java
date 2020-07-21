@@ -1,4 +1,4 @@
-package org.greening.onejar;
+package org.greening.unojar;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.Assertions;
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-public class OneJarMojo_ManifestEntriesTest {
+public class UnojarMojo_ManifestEntriesTest {
 	@BeforeAll
 	static void initAll() {
 	}
@@ -43,28 +43,28 @@ public class OneJarMojo_ManifestEntriesTest {
 	public void when_unojar_core_1_0_1() throws Exception {
 		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
 		mojo.set("bootfile", "unojar-core-1.0.1");
-		mojo.set("filename", "test-4.one-jar.jar");
+		mojo.set("filename", "test-4.uno-jar.jar");
 		mojo.execute();
 	}
 	@Test
 	public void when_unojar_core_1_0_1_jar() throws Exception {
 		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
 		mojo.set("bootfile", "classes/unojar-core-1.0.1.jar");
-		mojo.set("filename", "test-5.one-jar.jar");
+		mojo.set("filename", "test-5.uno-jar.jar");
 		mojo.execute();
 	}
 	@Test
 	public void when_not_exists() throws Exception {
 		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
 		mojo.set("bootfile", "NOTVALID-core-1.0.1");
-		mojo.set("filename", "test-5.one-jar.jar");
+		mojo.set("filename", "test-6.uno-jar.jar");
 		Assertions.assertThrows(MojoExecutionException.class, () -> mojo.execute());
 	}
 	@Test
 	public void when_not_exists_jar() throws Exception {
 		TestableMojo mojo = new TestableMojo().useDefaultTestArtifact();
 		mojo.set("bootfile", "classes/NOTVALID-core-1.0.1.jar");
-		mojo.set("filename", "test-5.one-jar.jar");
+		mojo.set("filename", "test-7.uno-jar.jar");
 		Assertions.assertThrows(MojoExecutionException.class, () -> mojo.execute());
 	}
 

@@ -1,18 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.greening</groupId>
-    <artifactId>onejar-maven-plugin</artifactId>
+    <artifactId>unojar-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.4.8</version>
-    <name>One-Jar Maven Plugin</name>
-    <url>https://github.com/greening/onejar-maven-plugin</url>
+    <version>1.5.0</version>
+    <name>Unojar Maven Plugin</name>
+    <url>https://github.com/greening/unojar-maven-plugin</url>
     <inceptionYear>2007</inceptionYear>
 
     <developers>
         <developer>
             <id>greening</id>
             <name>Daniel R. Greening</name>
-            <email>greening+onejar-maven-plugin@gmail.com</email>
+            <email>greening+unojar-maven-plugin@gmail.com</email>
         </developer>
         <developer>
             <id>sampov2</id>
@@ -60,8 +61,8 @@
     </licenses>
 
     <issueManagement>
-        <system>Google Code</system>
-        <url>http://code.google.com/p/onejar-maven-plugin/issues/list</url>
+        <system>Github</system>
+        <url>https://github.com/greening/unojar-maven-plugin/issues</url>
     </issueManagement>
 
     <properties>
@@ -164,7 +165,7 @@
                 </configuration>
             </plugin>
             <plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.9.1</version>
             </plugin>
@@ -244,25 +245,14 @@
 
     <distributionManagement>
         <repository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <name>onejar-maven-plugin Google Code Repository</name>
-            <!-- deploy from a release tag directory -->
-            <url>file://${basedir}/../../../mavenrepo</url>
+            <id>github</id>
+            <name>GitHub greening Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/greening/unojar-maven-plugin</url>
         </repository>
         <snapshotRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <name>onejar-maven-plugin Google Code SNAPSHOT Repository</name>
-            <!-- deploy from trunk -->
-            <url>file://${basedir}/../mavenrepo-snapshot</url>
+            <id>github</id>
+            <name>GitHub greening Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/greening/unojar-maven-plugin</url>
         </snapshotRepository>
-        <site>
-            <id>onejar-maven-plugin.googlecode.com</id>
-
-			<!-- deploy from trunk -->
-            <url>file://${basedir}/../mavensite/</url>
-
-			<!-- deploy from a release tag directory -->
-            <!-- <url>file://${basedir}/../../mavensite/</url> -->
-        </site>
     </distributionManagement>
 </project>

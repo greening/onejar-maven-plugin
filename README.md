@@ -1,4 +1,4 @@
-# onejar-maven-plugin
+# unojar-maven-plugin
 
 Build an executable jar containing all dependencies as internal, intact jar files. This means you can ship one jar file with all the libraries included.
 
@@ -9,7 +9,7 @@ There are various alternatives out there, including
 * [Spring Boot](https://www.baeldung.com/deployable-fat-jar-spring-boot) ... if you are using Spring.
 * Messing with the maven-assembly-plugin, but that will just unpack all dependencies together with your classes in one directory and then repack that directory into a new jar. Doing it that way means files will overwrite each other if they have the same names in the same path, which is quite common with resources such as log4.properties and even other more important files.
 
-With onejar-maven-plugin, you'll instead get a nice clean super jar with the dependency jars inside.
+With unojar-maven-plugin, you'll instead get a nice clean super jar with the dependency jars inside.
 
 Get started by following the Usage [instructions](http://one-jar.sourceforge.net/index.php%3Fpage%3Dgetting-started)!
 
@@ -22,17 +22,14 @@ The fork packages a patched one-jar 0.97 from [iceberg901](https://github.com/ic
     <plugins>
         <plugin>
             <groupId>org.greening</groupId>
-            <artifactId>onejar-maven-plugin</artifactId>
-            <version>1.4.8</version>
+            <artifactId>unojar-maven-plugin</artifactId>
+            <version>1.5.0</version>
             <executions>
                 <execution>
                     <configuration>
                         <mainClass>my.package.Foo</mainClass>
                         <attachToBuild>true</attachToBuild>
                     </configuration>
-                    <goals>
-                        <goal>one-jar</goal>
-                    </goals>
                 </execution>
             </executions>
         </plugin>

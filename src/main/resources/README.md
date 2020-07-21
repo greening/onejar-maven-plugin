@@ -1,1 +1,1 @@
-The one-jar-boot files are included here, but only because they are unavailable on the Central Maven Repository. Because uno-jar is available on the Central Maven Repository, when you build org.greening:unojar-maven-plugin, the uno-jar boot file is downloaded from there.
+For backward compatibility, one-jar-boot files are included here, but only because they are unavailable on the Central Maven Repository. Since uno-jar is available on the Central Maven Repository, when you build org.greening:unojar-maven-plugin, the uno-jar boot file is downloaded from there.
