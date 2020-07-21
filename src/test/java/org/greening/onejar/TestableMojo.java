@@ -11,14 +11,12 @@ import org.apache.maven.project.DefaultMavenProjectHelper;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.Ignore;
 
 /**
  * Convenient testing variation of the one-jar mojo.
  * 
  * @author bwijsmuller
  */
-@Ignore
 class TestableMojo extends OneJarMojo {
 	
 	private static final String defaultFinalName = "default-finalname";
@@ -30,7 +28,7 @@ class TestableMojo extends OneJarMojo {
 	private File projectTargetForTest;
 	
 	TestableMojo() {
-		projectTargetForTest = new File(System.getProperty("java.io.tmpdir")+"/one-jar-test/target");
+		projectTargetForTest = new File("target/test");
 		projectTargetForTest.mkdirs();
 		projectTargetForTest.deleteOnExit();
 		
@@ -47,7 +45,7 @@ class TestableMojo extends OneJarMojo {
 		set("filename", defaultFinalName+".one-jar.jar");
 		set("classifier", "onejar");
 		set("attachToBuild", false);
-		set("bootfile", "one-jar-boot-0.97.jar");
+		set("bootfile", "one-jar-boot-0.97");
 		set("project", project);
 		set("projectHelper", projectHelper);
 	}

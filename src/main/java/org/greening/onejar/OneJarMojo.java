@@ -12,18 +12,10 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.*;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.Attributes;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
+import java.util.jar.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
@@ -79,11 +71,11 @@ public class OneJarMojo extends AbstractMojo {
     private String filename;
 
     /**
-     * The one-jar or uno-jar artifact to start from. This must be a "one-jar-boot.jar" style artifact. If this is coming from
-     * a local file, it is a path relative to the project basedir. If no file exists at that location, we look for the file in
-     * the onejar-maven-plugin file itself.
+     * The one-jar or uno-jar artifact to start from. If the bootfile is terminated with ".jar", it is assumed to be a file
+     * path relative to the project basedir. If bootfile is not terminated with ".jar", we add '.jar" and look for the file
+     * inside the onejar-maven-plugin jar file.
      */
-    @Parameter(defaultValue = "one-jar-boot-0.97-patched.jar")
+    @Parameter(defaultValue = "one-jar-boot-0.97-patched")
     private String bootfile;
     
     /**
@@ -147,26 +139,23 @@ public class OneJarMojo extends AbstractMojo {
         displayPluginInfo();
 
         JarOutputStream out = null;
-        JarInputStream template = null;
-        File onejarFile = null;
+        File onejarFile;
         try {
+            // Prepare the onejar manifest file content from bootfile
+            Manifest manifest = prepareManifest();
+
         	// Create the target file
             onejarFile = new File(outputDirectory, filename);
-
-            // Prepare the onejar manifest file content
-            Manifest manifest = prepareManifest();
-            
-            // Open a stream to write to the target file
 			out = new JarOutputStream(new FileOutputStream(onejarFile, false), manifest);
         	
 			// Add files (based on options)
-            addFilesToArchive(out);
+            addFilesToOutput(out);
             
             // Finalize the onejar archive
-            template = openOnejarTemplateArchive();
-            copyTemplateFilesToArchive(template, out);
+            JarInputStream bootStream = openOnejarStream();
+            copyBootFilesToOutput(bootStream, out);
             out.close();
-            template.close();
+            bootStream.close();
         } catch (IOException e) {
             error(e);
             throw new MojoExecutionException("One-jar Mojo failed.", e);
@@ -178,21 +167,21 @@ public class OneJarMojo extends AbstractMojo {
         }
     }
 
-	private void copyTemplateFilesToArchive(JarInputStream template,
-			JarOutputStream out) throws IOException {
+	private void copyBootFilesToOutput(JarInputStream bootStream,
+                                       JarOutputStream out) throws IOException {
 		// One-jar stuff
         debug("Adding one-jar components...");
 		
 		ZipEntry entry = null;
-        while ((entry = template.getNextEntry()) != null) {
-            // Skip the manifest file, no need to clutter...
+        while ((entry = bootStream.getNextEntry()) != null) {
+            // Skip the boot manifest file (unnecessary file in uno-jar). We don't use it here anymore, and it isn't needed in output jar
             if (!"boot-manifest.mf".equals(entry.getName())) {
-                addToZip(out, entry, template);
+                addToZip(out, entry, bootStream);
             }
         }
 	}
 
-	private void addFilesToArchive(JarOutputStream out) throws IOException, MojoExecutionException {
+	private void addFilesToOutput(JarOutputStream out) throws IOException, MojoExecutionException {
 		final List<File> dependencyJars = Collections.unmodifiableList(extractDependencyFiles(artifacts));
         final List<File> systemDependencyJars = Collections.unmodifiableList(extractSystemDependencyFiles(dependencies));
 		
@@ -238,19 +227,26 @@ public class OneJarMojo extends AbstractMojo {
 
 	private void displayPluginInfo() {
         String outputFile = outputDirectory.getAbsolutePath() + File.separator + filename;
-        info("One-Jar %s using template %s, building %s", implementationVersion, bootfile, outputFile );
+        info("One-Jar %s using boot jar %s, building %s", implementationVersion, bootfile, outputFile );
     }
 
-    // ----- One-Jar Template ------------------------------------------------------------------------------------------
+    // ----- One-Jar Boot Jar ------------------------------------------------------------------------------------------
 
-    private JarInputStream openOnejarTemplateArchive() throws IOException {
-        String bootFilename = (project != null? project.getBasedir(): ".") + File.separator + bootfile;
-        File f = new File(bootFilename);
-        if (f.isFile() && f.canRead()) {
-            return new JarInputStream( new FileInputStream(f) );
+    private JarInputStream openOnejarStream() throws IOException {
+        if (bootfile.matches(".*\\.jar$")) {
+            String bootFilename = (project != null ? project.getBasedir() : ".") + File.separator + bootfile;
+            File f = new File(bootFilename);
+            if (f.isFile() && f.canRead()) {
+                return new JarInputStream(new FileInputStream(f));
+            } else
+                return null;
         } else {
-            return new JarInputStream(getClass().getClassLoader().getResourceAsStream(bootfile));
+            return new JarInputStream(getClass().getClassLoader().getResourceAsStream(bootfile + ".jar"));
         }
+    }
+
+    private Manifest openBootManifest() throws IOException {
+        return openOnejarStream().getManifest();
     }
     
     private class AttributeEntry extends AbstractMap.SimpleEntry<String, String> {
@@ -261,10 +257,7 @@ public class OneJarMojo extends AbstractMojo {
 	}
     
     private Manifest prepareManifest() throws IOException {
-        // Copy the template's boot-manifest.mf file
-        ZipInputStream zipIS = openOnejarTemplateArchive();
-        Manifest manifest = new Manifest(getFileBytes(zipIS, "boot-manifest.mf"));
-        zipIS.close();
+        Manifest manifest = openBootManifest();
 
         Attributes mainAttributes = manifest.getMainAttributes();
         // first add the custom specified entries
@@ -274,7 +267,7 @@ public class OneJarMojo extends AbstractMojo {
         // (It's required and defaulted, so this always executes...)
         //
         // TODO: The format of this manifest entry is not "hard and fast".  Some specs call for "implementationVersion",
-        // some for "implemenation-version", and others use various capitalizations of these two.  It's likely that a
+        // some for "implementation-version", and others use various capitalizations of these two.  It's likely that a
         // better solution then this "brute-force" bit here is to allow clients to configure these entries from the
         // Maven POM.
         setRequired(mainAttributes,
@@ -356,14 +349,20 @@ public class OneJarMojo extends AbstractMojo {
     }
 
     private InputStream getFileBytes(ZipInputStream is, String name) throws IOException {
-        ZipEntry entry = null;
-        while ((entry = is.getNextEntry()) != null) {
-            if (entry.getName().equals(name)) {
-                byte[] data = IOUtils.toByteArray(is);
-                return new ByteArrayInputStream(data);
+        final JarFile file = new JarFile(name);
+        try {
+            final Enumeration<? extends JarEntry> entries = file.entries();
+            while (entries.hasMoreElements()) {
+                final JarEntry entry = entries.nextElement();
+                if (entry.getName().equals(name)) {
+                    byte[] data = IOUtils.toByteArray(is);
+                    return new ByteArrayInputStream(data);
+                }
             }
+            return null;
+        } finally {
+            file.close();
         }
-        return null;
     }
 
     /**
@@ -410,7 +409,6 @@ public class OneJarMojo extends AbstractMojo {
         return files;
     }
 
-    @SuppressWarnings("unchecked")
 	private static List<File> toFileList(FileSet fileSet)
             throws IOException {
         File directory = new File(fileSet.getDirectory());
