@@ -26,6 +26,9 @@ The fork packages a patched one-jar 0.97 from [iceberg901](https://github.com/ic
             <version>1.5.0</version>
             <executions>
                 <execution>
+                    <goals>
+                        <goal>unojar</goal>
+                    </goals>
                     <configuration>
                         <mainClass>my.package.Foo</mainClass>
                         <attachToBuild>true</attachToBuild>
@@ -36,7 +39,20 @@ The fork packages a patched one-jar 0.97 from [iceberg901](https://github.com/ic
     </plugins>
 </build>
 ```
-# References for folks modifying this repo
+# Plugin Developers
+If you'd like to make changes I'm happy to review and merge pull requests. The intention is that each release should make the source cleaner, so please emphasize smaller code, exploit new features in OpenJava 11 (the latest LTS release), and add clear documentation for whatever you might provide.
+
+## Challenges
+I'll just mention here things that didn't work well for me, so you can either avoid them or think of them as "for the mightiest," such as you.
+* I believe because the the org.apache.maven:plugin-testing source code is not being maintained, I could not get [Maven Plugin Test Harness](https://github.com/apache/maven-plugin-testing) to work. There is a test Mojo in the unojar-maven-plugin source code that is useful.
+* The MANIFEST.MF file in the fatjar has extra stuff in it. There's probably a way to figure out whether you should put out a One-Jar-Main-Class entry (only when you use one-jar) or a Uno-Jar-Main-Class entry (when you use uno-jar), but at present this version provides both in MANIFEST.MF. If you tackle this, remember that a user can supply the boot file separately, so you might want to look in the boot file manifest to figure out which one to use.
+* There's an ImplementationVersion and an Implementation-Version entry in the MANIFEST.MF file. Do we need both?
+
+## References
 
 * [Plugin Parameter Expressions](https://maven.apache.org/ref/3.6.3/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html)
 * [Uno-Jar github repository](https://github.com/nsoft/uno-jar)
+
+# Plugin Deployers (only Dan at the moment)
+
+

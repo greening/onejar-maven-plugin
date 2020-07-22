@@ -4,10 +4,16 @@
     <groupId>org.greening</groupId>
     <artifactId>unojar-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.5.0</version>
+    <version>1.5.1-SNAPSHOT</version>
     <name>Unojar Maven Plugin</name>
     <url>https://github.com/greening/unojar-maven-plugin</url>
     <inceptionYear>2007</inceptionYear>
+    <description>Unojar maven plugin creates a "fat jar" or "uber jar". It packages dependency jars with a main jar file, and with a specified main class to start, into a ...unojar.jar file. Dependent jars are automatically loaded with the main jar, and main method in the main class is called. This allows an entire application to be released as a single file and run with "java -jar ...unojar.jar".</description>
+
+    <scm>
+        <connection>git:ssh://github.com/greening/unojar-maven-plugin.git</connection>
+        <url>https://github.com/greening/unojar-maven-plugin</url>
+    </scm>
 
     <developers>
         <developer>
@@ -169,16 +175,15 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.9.1</version>
             </plugin>
-
-            <!-- maven-source-plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
+                        <id>attach-sources</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -212,6 +217,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <reporting>
@@ -232,27 +250,60 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.22.2</version>
             </plugin>
         </plugins>
     </reporting>
 
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub greening Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/greening/unojar-maven-plugin</url>
-        </repository>
-        <snapshotRepository>
-            <id>github</id>
-            <name>GitHub greening Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/greening/unojar-maven-plugin</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
