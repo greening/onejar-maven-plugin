@@ -53,6 +53,7 @@ I'll just mention here things that didn't work well for me, so you can either av
 * [Plugin Parameter Expressions](https://maven.apache.org/ref/3.6.3/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html)
 * [Uno-Jar github repository](https://github.com/nsoft/uno-jar)
 
-# Plugin Deployers (only Dan at the moment)
+# Plugin Deployers
+Only Dan at the moment. Contribute something useful and I'll make you one.
 
 
